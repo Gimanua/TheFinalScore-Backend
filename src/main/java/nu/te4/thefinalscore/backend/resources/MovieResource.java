@@ -10,7 +10,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-@Path("")
+@Path("movie")
 @Produces(MediaType.APPLICATION_JSON)
 public class MovieResource {
 
@@ -23,4 +23,9 @@ public class MovieResource {
         return movieBean.getMovies(query);
     }
 
+    @Path("info/{title}")
+    @GET
+    public Response getMovie(@PathParam("title") String title){
+        return movieBean.getMovie(title);
+    }
 }
