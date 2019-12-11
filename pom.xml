@@ -23,6 +23,12 @@
             <version>${jakartaee}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.konghq</groupId>
+            <artifactId>unirest-java</artifactId>
+            <version>3.3.00</version>
+        </dependency>
+
     </dependencies>
     
      <build>
