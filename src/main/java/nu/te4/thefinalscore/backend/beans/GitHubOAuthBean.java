@@ -15,8 +15,8 @@ import javax.ws.rs.core.MediaType;
 @Stateless
 public class GitHubOAuthBean {
     
-    private final String CLIENT_ID = "2c7f4a2d93f2ed9ba83b"; 
-    private final String CLIENTSECRET = "edf920f38dbf2fb8b105f84e6a8b51a991b7c0df";
+    private final String CLIENT_ID = "686a9cd2fe0be4052344"; 
+    private final String CLIENTSECRET = "0fe2239e29926432cb28569ec20cf03ffae3876a";
     
     public String getToken(String code){
         String url = String.format("https://github.com/login/oauth/access_token?client_id=%s&client_secret=%s&code=%s", CLIENT_ID,CLIENTSECRET,code);
