@@ -26,15 +26,21 @@ public class GitHubOathResponse {
     @Path("token")
     @Produces(MediaType.TEXT_PLAIN)
     public Response getToken(@QueryParam("code") String code){
-        return Response.ok(gitHubOAuthBean.getToken(code)).build();
+        return gitHubOAuthBean.getToken(code);
     }
     
-    //REST-Tjänst för att få alla uppgifter från användaern med token
+    //REST-Tjänst för att få alla uppgifter från användaren med token
     @GET
     @Path("login")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getEvents(@QueryParam("token") String token){
-        return Response.ok(gitHubOAuthBean.githubAuth(token)).build();
+        return gitHubOAuthBean.githubAuth(token);
+    }
+    
+    @GET
+    @Path("ping")
+    public Response ping(){
+        return Response.ok("ping").build();
     }
     
 }
