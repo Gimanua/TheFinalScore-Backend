@@ -48,11 +48,11 @@ public class MovieBean {
         }
         
         JSONObject result = response.getBody().getObject();
-        System.out.println(result);
         
         String movieTitle = result.getString("Title");
         String movieReleased = result.getString("Released");
         String moviePlot = result.getString("Plot");
+        String moviePoster = result.getString("Poster");
         List<Rating> movieRatings = new ArrayList();
         
         JSONArray ratings = result.getJSONArray("Ratings");
@@ -61,7 +61,7 @@ public class MovieBean {
             movieRatings.add(new Rating(rating.getString("Source"), rating.getString("Value")));
         }
         
-        Movie movie = new Movie(movieTitle, movieReleased, moviePlot, movieRatings);
+        Movie movie = new Movie(movieTitle, movieReleased, moviePlot, moviePoster, movieRatings);
         return Response.status(Response.Status.OK).entity(movie).build();
     }
 }

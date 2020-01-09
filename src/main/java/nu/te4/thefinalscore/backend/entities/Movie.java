@@ -6,12 +6,14 @@ public class Movie {
     private String title;
     private String released;
     private String plot;
+    private String poster;
     private List<Rating> ratings;
 
-    public Movie(String title, String released, String plot, List<Rating> ratings) {
+    public Movie(String title, String released, String plot, String poster, List<Rating> ratings) {
         this.title = title;
         this.released = released;
         this.plot = plot;
+        this.poster = poster;
         this.ratings = ratings;
     }
 
@@ -45,5 +47,13 @@ public class Movie {
 
     public void setRatings(List<Rating> ratings) {
         this.ratings = ratings;
+    }
+
+    public String getPoster() {
+        return poster;
+    }
+
+    public void setPoster(String poster) {
+        this.poster = poster;
     }
 }
