@@ -1,6 +1,7 @@
 package nu.te4.thefinalscore.backend.beans;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
@@ -61,7 +62,16 @@ public class MovieBean {
             movieRatings.add(new Rating(rating.getString("Source"), rating.getString("Value")));
         }
         
-        Movie movie = new Movie(movieTitle, movieReleased, moviePlot, moviePoster, movieRatings);
+        List<String> movieGenres = new ArrayList();
+        String rawGenres = result.getString("Genre");
+        movieGenres.addAll(Arrays.asList(rawGenres.split(",")));
+        String director = result.getString("Director");
+        
+        List<String> movieCast = new ArrayList();
+        String rawCast = result.getString("Actors");
+        movieCast.addAll(Arrays.asList(rawCast.split(",")));
+        
+        Movie movie = new Movie(movieTitle, movieReleased, moviePlot, moviePoster, movieRatings, movieGenres, director, movieCast);
         return Response.status(Response.Status.OK).entity(movie).build();
     }
 }
