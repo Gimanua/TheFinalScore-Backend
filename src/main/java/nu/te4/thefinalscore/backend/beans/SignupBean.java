@@ -14,14 +14,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Handles logic for signing up users.
+ * Contaings logic for signing up users.
  * @author Adrian Klasson
  */
 @Stateless
 public class SignupBean {
 
     /**
-     * Handles all the logging.
+     * Logs information.
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(SignupBean.class);
 
@@ -68,7 +68,7 @@ public class SignupBean {
                 entity = user;
             }
         } catch (SQLException ex) {
-            LOGGER.error("Error: {}", ex);
+            LOGGER.error("Error signing up OAuth user: {}", ex);
             status = Status.SERVICE_UNAVAILABLE;
         }
 
@@ -93,7 +93,7 @@ public class SignupBean {
             
             if (stmt.executeUpdate() != 1) {
                 status = Status.BAD_REQUEST;
-                LOGGER.warn("Could not insert user. Perhaps username was already taken.");
+                LOGGER.info("Could not insert user. Perhaps username was already taken.");
             } else {
                 ResultSet generatedKeys = stmt.getGeneratedKeys();
                 int id = generatedKeys.getInt(1);
@@ -104,7 +104,7 @@ public class SignupBean {
             }
             
         } catch (SQLException ex) {
-            LOGGER.error("Error: {}", ex);
+            LOGGER.error("Error signing up regular user: {}", ex);
             status = Status.SERVICE_UNAVAILABLE;
         }
         

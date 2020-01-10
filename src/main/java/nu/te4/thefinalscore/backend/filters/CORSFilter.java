@@ -6,9 +6,19 @@ import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.ext.Provider;
 
+/**
+ * Contains one filter for allowing all traffic to this site.
+ * @author Adrian Klasson
+ */
 @Provider
 public class CORSFilter implements ContainerResponseFilter {
 
+    /**
+     * Filters traffic, allowing all traffic to this site.
+     * @param requestContext The request context.
+     * @param cres The response context.
+     * @throws IOException If Output fails.
+     */
    @Override
    public void filter(final ContainerRequestContext requestContext,
                       final ContainerResponseContext cres) throws IOException {

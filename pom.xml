@@ -5,7 +5,7 @@
     <artifactId>TheFinalScore-Backend</artifactId>
     <version>1.0</version>
     <packaging>war</packaging>
-    <name>TheFinalScore-Backend-1.0</name>
+    <name>TheFinalScore-Backend</name>
     
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>

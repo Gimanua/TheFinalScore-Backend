@@ -1,18 +1,28 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package nu.te4.thefinalscore.backend.entities;
 
 /**
- *
+ * Represents a user in the projects database.
  * @author Adrian Klasson
  */
 public class User {
+    /**
+     * The identifier for the user.
+     */
     private int id;
+    
+    /**
+     * The username of the user.
+     */
     private String username;
+    
+    /**
+     * The password of the user.
+     */
     private String password;
+    
+    /**
+     * The OAuth identifier for the user.
+     */
     private Integer OAuthID;
 
     public User() {

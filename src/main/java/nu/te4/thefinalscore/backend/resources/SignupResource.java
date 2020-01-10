@@ -11,7 +11,7 @@ import nu.te4.thefinalscore.backend.beans.SignupBean;
 import nu.te4.thefinalscore.backend.entities.User;
 
 /**
- *
+ * Contains web resources for using signing up on this site.
  * @author Adrian Klasson
  */
 @Path("")
@@ -19,9 +19,17 @@ import nu.te4.thefinalscore.backend.entities.User;
 @Produces(MediaType.APPLICATION_JSON)
 public class SignupResource {
     
+    /**
+     * Handles all the logic.
+     */
     @EJB
     SignupBean signupBean;
     
+    /**
+     * Signs up a user.
+     * @param user The user to sign up.
+     * @return A response with the status indicating success or not.
+     */
     @Path("signup")
     @POST
     public Response signupUser(User user){

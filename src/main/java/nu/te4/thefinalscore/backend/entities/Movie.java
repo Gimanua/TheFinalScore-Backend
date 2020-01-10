@@ -2,14 +2,49 @@ package nu.te4.thefinalscore.backend.entities;
 
 import java.util.List;
 
+/**
+ * Represents a real world movie.
+ * @author Adrian Klasson
+ */
 public class Movie {
+    /**
+     * The title of the movie.
+     */
     private String title;
+    
+    /**
+     * When the movie was released.
+     */
     private String released;
+    
+    /**
+     * The plot of the movie.
+     */
     private String plot;
+    
+    /**
+     * The URL to the poster of the movie.
+     */
     private String poster;
+    
+    /**
+     * The ratings of the movie.
+     */
     private List<Rating> ratings;
+    
+    /**
+     * The genres of the movie.
+     */
     private List<String> genres;
+    
+    /**
+     * The director of the movie.
+     */
     private String director;
+    
+    /**
+     * The cast of the movie.
+     */
     private List<String> cast;
 
     public Movie(String title, String released, String plot, String poster, List<Rating> ratings, List<String> genres, String director, List<String> cast) {
