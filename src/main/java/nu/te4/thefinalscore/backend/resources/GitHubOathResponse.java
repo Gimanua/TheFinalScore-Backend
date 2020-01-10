@@ -45,4 +45,15 @@ public class GitHubOathResponse {
     public Response getInfo(@QueryParam("token") String token){
         return gitHubOAuthBean.githubAuth(token);
     }
+    
+    @GET
+    @Path("verify")
+    public Response verify(@QueryParam("token") String token){
+        try {
+            
+        } catch (Exception e) {
+        }
+
+        return gitHubOAuthBean.verify(token);
+    }
 }
