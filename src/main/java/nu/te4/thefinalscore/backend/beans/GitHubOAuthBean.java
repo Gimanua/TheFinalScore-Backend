@@ -85,6 +85,7 @@ public class GitHubOAuthBean {
             JsonObject auth = target.request(MediaType.APPLICATION_JSON).get(JsonObject.class);
         } catch (Exception e) {
             System.out.println("Failed to verify user: " + e.getMessage());
+            return Response.status(Response.Status.UNAUTHORIZED).build();
         }
         return Response.ok().build();
         
