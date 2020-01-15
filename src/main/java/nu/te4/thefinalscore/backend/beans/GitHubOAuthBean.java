@@ -77,17 +77,22 @@ public class GitHubOAuthBean {
         return Response.status(Response.Status.UNAUTHORIZED).build();
     }
     
+    /**
+     * 
+     * @param token
+     * @return 
+     */
     public Response verify(String token){
         try {
             Client client = ClientBuilder.newClient();
             String tokenvalue = token;
             WebTarget target = client.target("http://api.github.com/user?access_token="+tokenvalue);
             JsonObject auth = target.request(MediaType.APPLICATION_JSON).get(JsonObject.class);
+            return Response.ok(auth).build();
         } catch (Exception e) {
             System.out.println("Failed to verify user: " + e.getMessage());
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
-        return Response.ok().build();
         
     }
 
