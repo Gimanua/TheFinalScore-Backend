@@ -1,5 +1,7 @@
 package nu.te4.thefinalscore.backend.entities;
 
+import java.util.Base64;
+
 /**
  * Represents a user in the projects database.
  * @author Adrian Klasson
@@ -37,7 +39,11 @@ public class User {
         this.username = username;
         this.password = password;
     }
-
+    
+    public User(String username){
+        this.username = username;
+    }
+    
     public String getUsername() {
         return username;
     }

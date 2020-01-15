@@ -13,6 +13,16 @@ public class Movie {
     private String title;
     
     /**
+     * What year the movie was released.
+     */
+    private String year;
+    
+    /**
+     * The runtime of the movie.
+     */
+    private String runtime;
+    
+    /**
      * When the movie was released.
      */
     private String released;
@@ -46,9 +56,15 @@ public class Movie {
      * The cast of the movie.
      */
     private List<String> cast;
+    
+    private List<String> languages;
+    
+    private String type;
 
-    public Movie(String title, String released, String plot, String poster, List<Rating> ratings, List<String> genres, String director, List<String> cast) {
+    public Movie(String title, String year, String runtime, String released, String plot, String poster, List<Rating> ratings, List<String> genres, String director, List<String> cast, List<String> languages, String type) {
         this.title = title;
+        this.year = year;
+        this.runtime = runtime;
         this.released = released;
         this.plot = plot;
         this.poster = poster;
@@ -56,6 +72,8 @@ public class Movie {
         this.genres = genres;
         this.director = director;
         this.cast = cast;
+        this.languages = languages;
+        this.type = type;
     }
 
     public String getTitle() {
@@ -120,5 +138,37 @@ public class Movie {
 
     public void setCast(List<String> cast) {
         this.cast = cast;
+    }
+
+    public String getYear() {
+        return year;
+    }
+
+    public void setYear(String year) {
+        this.year = year;
+    }
+
+    public String getRuntime() {
+        return runtime;
+    }
+
+    public void setRuntime(String runtime) {
+        this.runtime = runtime;
+    }
+
+    public List<String> getLanguages() {
+        return languages;
+    }
+
+    public void setLanguages(List<String> languages) {
+        this.languages = languages;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

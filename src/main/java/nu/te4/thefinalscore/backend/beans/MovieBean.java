@@ -84,8 +84,26 @@ public class MovieBean {
             JSONObject result = response.getBody().getObject();
 
             String movieTitle = result.getString("Title");
+            String movieYear = result.getString("Year");
             String movieReleased = result.getString("Released");
+            String movieRuntime = result.getString("Runtime");
+            
+            List<String> movieGenres = new ArrayList();
+            String rawGenres = result.getString("Genre");
+            movieGenres.addAll(Arrays.asList(rawGenres.split(",")));
+            
+            String movieDirector = result.getString("Director");
+            
+            List<String> movieCast = new ArrayList();
+            String rawCast = result.getString("Actors");
+            movieCast.addAll(Arrays.asList(rawCast.split(",")));
+            
             String moviePlot = result.getString("Plot");
+            
+            List<String> movieLanguages = new ArrayList();
+            String rawLanguages = result.getString("Language");
+            movieLanguages.addAll(Arrays.asList(rawLanguages.split(",")));
+            
             String moviePoster = result.getString("Poster");
             List<Rating> movieRatings = new ArrayList();
 
@@ -94,17 +112,11 @@ public class MovieBean {
                 JSONObject rating = ratings.getJSONObject(i);
                 movieRatings.add(new Rating(rating.getString("Source"), rating.getString("Value")));
             }
+            
+            String movieType = result.getString("Type");
 
-            List<String> movieGenres = new ArrayList();
-            String rawGenres = result.getString("Genre");
-            movieGenres.addAll(Arrays.asList(rawGenres.split(",")));
-            String director = result.getString("Director");
-
-            List<String> movieCast = new ArrayList();
-            String rawCast = result.getString("Actors");
-            movieCast.addAll(Arrays.asList(rawCast.split(",")));
-
-            Movie movie = new Movie(movieTitle, movieReleased, moviePlot, moviePoster, movieRatings, movieGenres, director, movieCast);
+            Movie movie = new Movie(movieTitle, movieYear, movieRuntime, movieReleased, moviePlot, moviePoster,
+            movieRatings, movieGenres, movieDirector, movieCast, movieLanguages, movieType);
             return Response.status(Response.Status.OK).entity(movie).build();
         } catch (Exception ex) {
             LOGGER.error("Failed to retrieve movie information: {}", ex.getMessage());
