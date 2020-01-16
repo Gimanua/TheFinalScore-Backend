@@ -30,4 +30,10 @@ public class SigninResource {
     public Response signInRegularUser(@HeaderParam("Authorization") String basicAuth){
         return signinBean.signInRegularUser(basicAuth);
     }
+    
+    @Path("oauth")
+    @GET
+    public Response signInOAuthUser(@HeaderParam("Authorization") String basicAuth){
+        return signinBean.signInOAuthUser(basicAuth);
+    }
 }

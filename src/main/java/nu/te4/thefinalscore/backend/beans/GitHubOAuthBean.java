@@ -86,7 +86,7 @@ public class GitHubOAuthBean {
         try {
             Client client = ClientBuilder.newClient();
             String tokenvalue = token;
-            WebTarget target = client.target("http://api.github.com/user?access_token="+tokenvalue);
+            WebTarget target = client.target("https://api.github.com/user?access_token="+tokenvalue);
             JsonObject auth = target.request(MediaType.APPLICATION_JSON).get(JsonObject.class);
             return Response.ok(auth).build();
         } catch (Exception e) {
