@@ -11,6 +11,9 @@ Download the version called "18.0.1.Final". Then you also need the wildfly plugi
 ## Running
 Open the movie.java (any .java file works) file in the entities folder. Now you can start it with pressing F6 (It is recomended to "Clean and build" first). Now a tab should pop up in your browser. Don't worry if you get the 403 error message. It works anyway. 
 
+## Architechture
+The back end talkes to the frontend, supplying it with the data for the movies from the API (OMDB + the movie db). The back end also talkes to the database, to store user login credentials, and what moves what users has added to their lists.
+
 ## Made by:
 * Adrian 
 * Erik 
