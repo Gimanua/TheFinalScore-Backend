@@ -16,6 +16,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import nu.te4.thefinalscore.backend.ConnectionFactory;
 import nu.te4.thefinalscore.backend.entities.Credentials;
 import nu.te4.thefinalscore.backend.entities.User;
@@ -34,7 +35,7 @@ public class SigninBean {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(SigninBean.class);
     
-    public Response signInRegularUser(String basicAuth){
+    public Status signInRegularUser(String basicAuth){
         
         try (Connection connection = ConnectionFactory.getConnection()){
             
@@ -51,24 +52,23 @@ public class SigninBean {
             if(result.verified){
                 User user = new User(credentials.getUsername());
                 user.setId(id);
-                return Response.status(Response.Status.OK).entity(user).build();
+                return Response.Status.OK;
             }
-                
             else
-                return Response.status(Response.Status.UNAUTHORIZED).build();
+                return Response.Status.UNAUTHORIZED;
         } catch(Exception ex){
             LOGGER.error("Failed to sign in regular user: {}", ex.getMessage());
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return Response.Status.UNAUTHORIZED;
         }
     }
     
-    public Response signInOAuthUser(String basicAuth){
+    public Status signInOAuthUser(String basicAuth){
         try (Connection connection = ConnectionFactory.getConnection()){
             Credentials credentials = new Credentials(basicAuth);
             
             Integer credentialsOauthID = getOAuthID(credentials.getVerifier());
             if(credentialsOauthID == null)
-                return Response.status(Response.Status.UNAUTHORIZED).build();
+                return Response.Status.UNAUTHORIZED;
             
             String sql = "SELECT oauth_id FROM users WHERE username=?";
             PreparedStatement stmt = connection.prepareStatement(sql);
@@ -77,10 +77,10 @@ public class SigninBean {
             data.next();
             int oauthID = data.getInt("oauth_id");
             
-            return Response.status(credentialsOauthID.equals(oauthID) ? Response.Status.OK : Response.Status.UNAUTHORIZED).build();
+            return credentialsOauthID.equals(oauthID) ? Response.Status.OK : Response.Status.UNAUTHORIZED;
         } catch (Exception ex) {
             LOGGER.error("Failed to sign in oauth user: {}", ex.getMessage());
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return Response.Status.UNAUTHORIZED;
         }
     }
     

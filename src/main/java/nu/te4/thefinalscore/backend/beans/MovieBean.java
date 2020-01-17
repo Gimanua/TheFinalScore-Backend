@@ -1,8 +1,15 @@
 package nu.te4.thefinalscore.backend.beans;
 
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.ejb.EJB;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
@@ -10,8 +17,10 @@ import javax.ejb.Stateless;
 import javax.ws.rs.core.Response;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
+import nu.te4.thefinalscore.backend.ConnectionFactory;
+import nu.te4.thefinalscore.backend.entities.Credentials;
 import nu.te4.thefinalscore.backend.entities.Movie;
-import nu.te4.thefinalscore.backend.entities.Rating;
+import nu.te4.thefinalscore.backend.entities.Score;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +46,9 @@ public class MovieBean {
      */
     private final String omdbApiKey = "8574ffd";
 
+    @EJB
+    private UserBean userBean;
+    
     /**
      * Gets a list of movie titles based on a search query.
      * @param query What you search for.
@@ -105,23 +117,67 @@ public class MovieBean {
             movieLanguages.addAll(Arrays.asList(rawLanguages.split(",")));
             
             String moviePoster = result.getString("Poster");
-            List<Rating> movieRatings = new ArrayList();
+            List<Score> movieRatings = new ArrayList();
 
             JSONArray ratings = result.getJSONArray("Ratings");
             for (int i = 0; i < ratings.length(); i++) {
                 JSONObject rating = ratings.getJSONObject(i);
-                movieRatings.add(new Rating(rating.getString("Source"), rating.getString("Value")));
+                movieRatings.add(new Score(rating.getString("Source"), rating.getString("Value"), null));
             }
             
             String movieType = result.getString("Type");
 
-            Movie movie = new Movie(movieTitle, movieYear, movieRuntime, movieReleased, moviePlot, moviePoster,
-            movieRatings, movieGenres, movieDirector, movieCast, movieLanguages, movieType);
+            Movie movie = new Movie(null, movieTitle, movieYear, movieRuntime, movieReleased, moviePlot, moviePoster,
+            movieRatings, movieGenres, movieDirector, movieCast, movieLanguages, movieType, null);
             return Response.status(Response.Status.OK).entity(movie).build();
         } catch (Exception ex) {
             LOGGER.error("Failed to retrieve movie information: {}", ex.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
 
+    }
+    
+    public Response saveMovie(Movie movie, String basicAuth){
+        try(Connection connection = ConnectionFactory.getConnection()){
+            
+            //Save the movie
+            String sql = "INSERT INTO movies (title, synopsis, logo, director, year, runtime, released, type, final_score) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            PreparedStatement stmt = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
+            stmt.setString(1, movie.getTitle());
+            stmt.setString(2, movie.getSynopsis());
+            stmt.setString(3, movie.getLogo());
+            stmt.setString(4, movie.getDirector());
+            stmt.setString(5, movie.getYear());
+            stmt.setString(6, movie.getRuntime());
+            stmt.setString(7, movie.getReleased());
+            stmt.setString(8, movie.getType());
+            stmt.setString(9, movie.getFinalScore());
+            
+            if(stmt.executeUpdate() != 1){
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+            ResultSet generatedKeys = stmt.getGeneratedKeys();
+            generatedKeys.next();
+            int movieId = generatedKeys.getInt(1);
+            movie.setId(movieId);
+            
+            //Connect the movie with a user
+            Credentials credentials = new Credentials(basicAuth);
+            Integer userID = userBean.getUserId(credentials.getUsername());
+            
+            sql = "INSERT INTO saved_movies (user_id, movie_id) VALUES(?,?)";
+            stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, userID);
+            stmt.setInt(2, movieId);
+            if(stmt.executeUpdate() != 1){
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+            
+            return Response.status(Response.Status.CREATED).entity(movie).build();
+            
+        } catch(SQLException ex){
+            LOGGER.error("Failed to save movie: {}", ex.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

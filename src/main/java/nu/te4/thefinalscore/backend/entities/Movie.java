@@ -7,6 +7,9 @@ import java.util.List;
  * @author Adrian Klasson
  */
 public class Movie {
+    
+    private Integer id;
+    
     /**
      * The title of the movie.
      */
@@ -30,17 +33,17 @@ public class Movie {
     /**
      * The plot of the movie.
      */
-    private String plot;
+    private String synopsis;
     
     /**
      * The URL to the poster of the movie.
      */
-    private String poster;
+    private String logo;
     
     /**
      * The ratings of the movie.
      */
-    private List<Rating> ratings;
+    private List<Score> scores;
     
     /**
      * The genres of the movie.
@@ -60,20 +63,26 @@ public class Movie {
     private List<String> languages;
     
     private String type;
+    
+    private String finalScore;
 
-    public Movie(String title, String year, String runtime, String released, String plot, String poster, List<Rating> ratings, List<String> genres, String director, List<String> cast, List<String> languages, String type) {
+    public Movie(){}
+    
+    public Movie(Integer id, String title, String year, String runtime, String released, String synopsis, String logo, List<Score> scores, List<String> genres, String director, List<String> cast, List<String> languages, String type, String finalScore) {
+        this.id = id;
         this.title = title;
         this.year = year;
         this.runtime = runtime;
         this.released = released;
-        this.plot = plot;
-        this.poster = poster;
-        this.ratings = ratings;
+        this.synopsis = synopsis;
+        this.logo = logo;
+        this.scores = scores;
         this.genres = genres;
         this.director = director;
         this.cast = cast;
         this.languages = languages;
         this.type = type;
+        this.finalScore = finalScore;
     }
 
     public String getTitle() {
@@ -92,28 +101,28 @@ public class Movie {
         this.released = released;
     }
 
-    public String getPlot() {
-        return plot;
+    public String getSynopsis() {
+        return synopsis;
     }
 
-    public void setPlot(String plot) {
-        this.plot = plot;
+    public void setSynopsis(String synopsis) {
+        this.synopsis = synopsis;
     }
 
-    public List<Rating> getRatings() {
-        return ratings;
+    public List<Score> getScores() {
+        return scores;
     }
 
-    public void setRatings(List<Rating> ratings) {
-        this.ratings = ratings;
+    public void setScores(List<Score> scores) {
+        this.scores = scores;
     }
 
-    public String getPoster() {
-        return poster;
+    public String getLogo() {
+        return logo;
     }
 
-    public void setPoster(String poster) {
-        this.poster = poster;
+    public void setLogo(String logo) {
+        this.logo = logo;
     }
 
     public List<String> getGenres() {
@@ -170,5 +179,21 @@ public class Movie {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getFinalScore() {
+        return finalScore;
+    }
+
+    public void setFinalScore(String finalScore) {
+        this.finalScore = finalScore;
     }
 }

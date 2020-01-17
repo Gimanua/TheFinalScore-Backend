@@ -2,12 +2,16 @@ package nu.te4.thefinalscore.backend.resources;
 
 import nu.te4.thefinalscore.backend.beans.MovieBean;
 import javax.ejb.EJB;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import nu.te4.thefinalscore.backend.entities.Movie;
 
 /**
  * Contains web resources for real world Movies.
@@ -43,5 +47,12 @@ public class MovieResource {
     @GET
     public Response getMovie(@PathParam("title") String title){
         return movieBean.getMovie(title);
+    }
+    
+    @Path("save")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @POST
+    public Response saveMovie(Movie movie, @HeaderParam("Authorization") String basicAuth){
+        return movieBean.saveMovie(movie, basicAuth);
     }
 }

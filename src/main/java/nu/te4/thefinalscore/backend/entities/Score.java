@@ -4,7 +4,7 @@ package nu.te4.thefinalscore.backend.entities;
  * Represents a rating for a Movie.
  * @author Adrian Klasson
  */
-public class Rating {
+public class Score {
     /**
      * The source of the rating.
      */
@@ -14,10 +14,15 @@ public class Rating {
      * The actual rating.
      */
     private String value;
+    
+    private String sourceLogo;
 
-    public Rating(String source, String value) {
+    public Score(){}
+    
+    public Score(String source, String value, String sourceLogo) {
         this.source = source;
         this.value = value;
+        this.sourceLogo = sourceLogo;
     }
 
     public String getSource() {
@@ -34,5 +39,13 @@ public class Rating {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public String getSourceLogo() {
+        return sourceLogo;
+    }
+
+    public void setSourceLogo(String sourceLogo) {
+        this.sourceLogo = sourceLogo;
     }
 }

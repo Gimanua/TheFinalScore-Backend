@@ -28,12 +28,12 @@ public class SigninResource {
     @Path("regular")
     @GET
     public Response signInRegularUser(@HeaderParam("Authorization") String basicAuth){
-        return signinBean.signInRegularUser(basicAuth);
+        return Response.status(signinBean.signInRegularUser(basicAuth)).build();
     }
     
     @Path("oauth")
     @GET
     public Response signInOAuthUser(@HeaderParam("Authorization") String basicAuth){
-        return signinBean.signInOAuthUser(basicAuth);
+        return Response.status(signinBean.signInOAuthUser(basicAuth)).build();
     }
 }
