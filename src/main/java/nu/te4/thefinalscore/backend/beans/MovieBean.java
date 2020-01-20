@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Contains logic for everything related to movies.
+ *
  * @author Adrian Klasson
  */
 @Stateless
@@ -35,12 +36,12 @@ public class MovieBean {
      * Logs information.
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(MovieBean.class);
-    
+
     /**
      * The API key to the MovieDB.
      */
     private final String movieDbApiKey = "be96f5a969c038665fdfab7c659f24bf";
-    
+
     /**
      * The API key to the OMDB.
      */
@@ -48,19 +49,21 @@ public class MovieBean {
 
     @EJB
     private UserBean userBean;
-    
+
     /**
      * Gets a list of movie titles based on a search query.
+     *
      * @param query What you search for.
-     * @return A response containing a list of movie titles if successful, oterhwise internal server error.
+     * @return A response containing a list of movie titles if successful,
+     * oterhwise internal server error.
      */
     public Response getMovies(String query) {
         try {
             LOGGER.info("Retrieving movie titles.");
             HttpResponse<JsonNode> response = Unirest.get("https://api.themoviedb.org/3/search/movie?include_adult=false&page=1&query={query}&language=en-US&api_key={apiKey}")
-                            .routeParam("query", query)
-                            .routeParam("apiKey", movieDbApiKey)
-                            .asJson();
+                    .routeParam("query", query)
+                    .routeParam("apiKey", movieDbApiKey)
+                    .asJson();
 
             if (!response.isSuccess()) {
                 LOGGER.info("Retrieved no results with this query: {}", query);
@@ -71,12 +74,13 @@ public class MovieBean {
             return Response.ok().entity(obj.toString()).build();
         } catch (Exception ex) {
             LOGGER.error("Retrieving movie titles failed: {}", ex.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            return Response.status(Response.Status.SERVICE_UNAVAILABLE).build();
         }
     }
 
     /**
      * Gets information about a movie.
+     *
      * @param title The title of the movie.
      * @return A response containg information about the movie if possible.
      */
@@ -99,23 +103,23 @@ public class MovieBean {
             String movieYear = result.getString("Year");
             String movieReleased = result.getString("Released");
             String movieRuntime = result.getString("Runtime");
-            
+
             List<String> movieGenres = new ArrayList();
             String rawGenres = result.getString("Genre");
             movieGenres.addAll(Arrays.asList(rawGenres.split(",")));
-            
+
             String movieDirector = result.getString("Director");
-            
+
             List<String> movieCast = new ArrayList();
             String rawCast = result.getString("Actors");
             movieCast.addAll(Arrays.asList(rawCast.split(",")));
-            
+
             String moviePlot = result.getString("Plot");
-            
+
             List<String> movieLanguages = new ArrayList();
             String rawLanguages = result.getString("Language");
             movieLanguages.addAll(Arrays.asList(rawLanguages.split(",")));
-            
+
             String moviePoster = result.getString("Poster");
             List<Score> movieRatings = new ArrayList();
 
@@ -124,22 +128,22 @@ public class MovieBean {
                 JSONObject rating = ratings.getJSONObject(i);
                 movieRatings.add(new Score(rating.getString("Source"), rating.getString("Value"), null));
             }
-            
+
             String movieType = result.getString("Type");
 
             Movie movie = new Movie(null, movieTitle, movieYear, movieRuntime, movieReleased, moviePlot, moviePoster,
-            movieRatings, movieGenres, movieDirector, movieCast, movieLanguages, movieType, null);
+                    movieRatings, movieGenres, movieDirector, movieCast, movieLanguages, movieType, null);
             return Response.status(Response.Status.OK).entity(movie).build();
         } catch (Exception ex) {
             LOGGER.error("Failed to retrieve movie information: {}", ex.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            return Response.status(Response.Status.SERVICE_UNAVAILABLE).build();
         }
 
     }
-    
-    public Response saveMovie(Movie movie, String basicAuth){
-        try(Connection connection = ConnectionFactory.getConnection()){
-            
+
+    public Response saveMovie(Movie movie, String basicAuth) {
+        try ( Connection connection = ConnectionFactory.getConnection()) {
+
             //Save the movie
             String sql = "INSERT INTO movies (title, synopsis, logo, director, year, runtime, released, type, final_score) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
@@ -152,32 +156,108 @@ public class MovieBean {
             stmt.setString(7, movie.getReleased());
             stmt.setString(8, movie.getType());
             stmt.setString(9, movie.getFinalScore());
-            
-            if(stmt.executeUpdate() != 1){
+
+            if (stmt.executeUpdate() != 1) {
                 return Response.status(Response.Status.BAD_REQUEST).build();
             }
             ResultSet generatedKeys = stmt.getGeneratedKeys();
             generatedKeys.next();
             int movieId = generatedKeys.getInt(1);
             movie.setId(movieId);
-            
+
             //Connect the movie with a user
             Credentials credentials = new Credentials(basicAuth);
             Integer userID = userBean.getUserId(credentials.getUsername());
-            
+
             sql = "INSERT INTO saved_movies (user_id, movie_id) VALUES(?,?)";
             stmt = connection.prepareStatement(sql);
             stmt.setInt(1, userID);
             stmt.setInt(2, movieId);
-            if(stmt.executeUpdate() != 1){
+            if (stmt.executeUpdate() != 1) {
                 return Response.status(Response.Status.BAD_REQUEST).build();
             }
-            
+
             return Response.status(Response.Status.CREATED).entity(movie).build();
-            
-        } catch(SQLException ex){
+
+        } catch (SQLException ex) {
             LOGGER.error("Failed to save movie: {}", ex.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            return Response.status(Response.Status.SERVICE_UNAVAILABLE).build();
         }
+    }
+
+    public Response getSavedMovies(String basicAuth) {
+        try ( Connection connection = ConnectionFactory.getConnection()) {
+            Credentials credentials = new Credentials(basicAuth);
+
+            String sql = "SELECT movie_id FROM saved_movies WHERE user_id=?";
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setString(1, credentials.getUsername());
+            ResultSet data = stmt.executeQuery();
+            List<Integer> savedMovieIds = new ArrayList();
+            while (data.next()) {
+                savedMovieIds.add(data.getInt("movie_id"));
+            }
+
+            return Response.status(Response.Status.OK).entity(getSavedMovies(connection, savedMovieIds)).build();
+        } catch (SQLException ex) {
+            LOGGER.error("Failed to retrieve saved movies: {}", ex.getMessage());
+            return Response.status(Response.Status.SERVICE_UNAVAILABLE).build();
+        }
+    }
+
+    private List<Movie> getSavedMovies(Connection connection, List<Integer> savedMovieIds) throws SQLException {
+
+        List<Movie> savedMovies = new ArrayList();
+        for (int i : savedMovieIds) {
+                String sql = "SELECT * FROM movies WHERE movie_id=?";
+                PreparedStatement stmt = connection.prepareStatement(sql);
+                stmt.setInt(1, i);
+                ResultSet data = stmt.executeQuery();
+                
+                Movie movie = new Movie(
+                        data.getInt("id"), 
+                        data.getString("title"), 
+                        data.getString("year"), 
+                        data.getString("runtime"), 
+                        data.getString("released"), 
+                        data.getString("synopsis"), 
+                        data.getString("logo"),
+                        getMovieScores(connection, i), 
+                        getMovieData(connection, "genres", "name", i),
+                        data.getString("director"), 
+                        getMovieData(connection, "cast", "name", i), 
+                        getMovieData(connection, "languages", "name", i), 
+                        data.getString("type"), 
+                        data.getString("final_score"));
+                
+                savedMovies.add(movie);
+            }
+        return savedMovies;
+    }
+    
+    private List<String> getMovieData(Connection connection, String table, String select, int movieId) throws SQLException{
+        List<String> movieData = new ArrayList();
+        String sql = "SELECT ? FROM ? WHERE ?";
+        PreparedStatement stmt = connection.prepareStatement(sql);
+        stmt.setString(1, select);
+        stmt.setString(2, table);
+        stmt.setInt(3, movieId);
+        ResultSet data = stmt.executeQuery();
+        while(data.next()){
+            movieData.add(data.getString(select));
+        }
+        return movieData;
+    }
+    
+    private List<Score> getMovieScores(Connection connection, int movieId) throws SQLException {
+        List<Score> scores = new ArrayList();
+        String sql = "SELECT * FROM scores WHERE movie_id=?";
+        PreparedStatement stmt = connection.prepareStatement(sql);
+        stmt.setInt(1, movieId);
+        ResultSet data = stmt.executeQuery();
+        while(data.next()){
+            scores.add(new Score(data.getString("source"), data.getString("value"), data.getString("source_logo")));
+        }
+        return scores;
     }
 }

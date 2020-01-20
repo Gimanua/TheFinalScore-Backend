@@ -26,7 +26,7 @@ public class AuthorizationFilter implements ContainerResponseFilter {
 
     @Override
     public void filter(ContainerRequestContext crc, ContainerResponseContext crc1) throws IOException {
-        if (!crc.getMethod().equals("GET")) {
+        if (!crc.getMethod().equals("GET") || crc.getUriInfo().getPath().endsWith("saved-movies")) {
             MultivaluedMap<String, String> headers = crc.getHeaders();
             if (!headers.containsKey("Authorization")) {
                 crc.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());

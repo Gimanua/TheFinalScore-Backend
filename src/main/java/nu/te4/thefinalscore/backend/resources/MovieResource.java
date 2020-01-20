@@ -55,4 +55,10 @@ public class MovieResource {
     public Response saveMovie(Movie movie, @HeaderParam("Authorization") String basicAuth){
         return movieBean.saveMovie(movie, basicAuth);
     }
+    
+    @Path("saved-movies")
+    @GET
+    public Response getSavedMovies(@HeaderParam("Authorization") String basicAuth){
+        return movieBean.getSavedMovies(basicAuth);
+    }
 }
