@@ -38,4 +38,9 @@ public class Credentials {
     public String getVerifier() {
         return verifier;
     }
+
+    @Override
+    public String toString() {
+        return "Credentials{" + "username=" + username + ", verifier=" + verifier + '}';
+    }
 }

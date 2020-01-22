@@ -47,6 +47,8 @@ public class ConnectionFactory {
             initialized = true;
             LOGGER.info("Database connection initializing complete.");
         }
-        return DriverManager.getConnection("jdbc:mysql://localhost/the_final_score?user=user&password=m25pFs9JqkCUr9w0");
+        Connection connection = DriverManager.getConnection("jdbc:mysql://localhost/the_final_score?user=user&password=m25pFs9JqkCUr9w0");
+        LOGGER.info("Connection retrieved.");
+        return connection;
     }
 }

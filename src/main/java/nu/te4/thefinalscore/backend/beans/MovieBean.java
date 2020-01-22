@@ -164,7 +164,12 @@ public class MovieBean {
             generatedKeys.next();
             int movieId = generatedKeys.getInt(1);
             movie.setId(movieId);
-
+            
+            saveCast(connection, movie);
+            saveGenres(connection, movie);
+            saveLanguages(connection, movie);
+            saveScores(connection, movie);
+            
             //Connect the movie with a user
             Credentials credentials = new Credentials(basicAuth);
             Integer userID = userBean.getUserId(credentials.getUsername());
@@ -185,17 +190,72 @@ public class MovieBean {
         }
     }
 
+    private void saveCast(Connection connection, Movie movie) throws SQLException {
+        for (String name : movie.getCast()) {
+            String sql = "INSERT INTO casts (movie_id, name) VALUES(?, ?)";
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, movie.getId());
+            stmt.setString(2, name);
+            stmt.executeUpdate();
+        }
+    }
+    
+    private void saveGenres(Connection connection, Movie movie) throws SQLException{
+        for(String name : movie.getGenres()){
+            String sql = "INSERT INTO genres (movie_id, name) VALUES(?, ?)";
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, movie.getId());
+            stmt.setString(2, name);
+            stmt.executeUpdate();
+        }
+    }
+    
+    private void saveLanguages(Connection connection, Movie movie) throws SQLException{
+        for(String name : movie.getGenres()){
+            String sql = "INSERT INTO languages (movie_id, name) VALUES(?, ?)";
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, movie.getId());
+            stmt.setString(2, name);
+            stmt.executeUpdate();
+        }
+    }
+    
+    private void saveScores(Connection connection, Movie movie) throws SQLException{
+        for(Score score : movie.getScores()){
+            String sql = "INSERT INTO scores (movie_id, value, source, source_logo) VALUES(?, ?, ?, ?)";
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, movie.getId());
+            stmt.setString(2, score.getValue());
+            stmt.setString(3, score.getSource());
+            stmt.setString(4, score.getSourceLogo());
+            stmt.executeUpdate();
+        }
+    }
+
     public Response getSavedMovies(String basicAuth) {
         try ( Connection connection = ConnectionFactory.getConnection()) {
+            LOGGER.error("Parsing credentials from string basicAuth: {}", basicAuth);
             Credentials credentials = new Credentials(basicAuth);
+            LOGGER.error("Credentials parsed to: {}", credentials);
+
+            LOGGER.error("Retrieving userId with username: {}", credentials.getUsername());
+            Integer userId = userBean.getUserId(credentials.getUsername());
+            LOGGER.error("Id retrieved: {}", userId);
 
             String sql = "SELECT movie_id FROM saved_movies WHERE user_id=?";
+            LOGGER.error("Preparing statement with sql: {}", sql);
             PreparedStatement stmt = connection.prepareStatement(sql);
-            stmt.setString(1, credentials.getUsername());
+            LOGGER.error("Sets the user_id to: {}", userId);
+            stmt.setInt(1, userId);
+            LOGGER.error("Executing query");
             ResultSet data = stmt.executeQuery();
             List<Integer> savedMovieIds = new ArrayList();
+            LOGGER.error("Iterating over the data.");
             while (data.next()) {
-                savedMovieIds.add(data.getInt("movie_id"));
+                LOGGER.error("Retrieving the movie_id from the data.");
+                int movieId = data.getInt("movie_id");
+                LOGGER.error("Inserting the movie_id: {}", movieId);
+                savedMovieIds.add(movieId);
             }
 
             return Response.status(Response.Status.OK).entity(getSavedMovies(connection, savedMovieIds)).build();
@@ -209,53 +269,53 @@ public class MovieBean {
 
         List<Movie> savedMovies = new ArrayList();
         for (int i : savedMovieIds) {
-                String sql = "SELECT * FROM movies WHERE movie_id=?";
-                PreparedStatement stmt = connection.prepareStatement(sql);
-                stmt.setInt(1, i);
-                ResultSet data = stmt.executeQuery();
-                
-                Movie movie = new Movie(
-                        data.getInt("id"), 
-                        data.getString("title"), 
-                        data.getString("year"), 
-                        data.getString("runtime"), 
-                        data.getString("released"), 
-                        data.getString("synopsis"), 
-                        data.getString("logo"),
-                        getMovieScores(connection, i), 
-                        getMovieData(connection, "genres", "name", i),
-                        data.getString("director"), 
-                        getMovieData(connection, "cast", "name", i), 
-                        getMovieData(connection, "languages", "name", i), 
-                        data.getString("type"), 
-                        data.getString("final_score"));
-                
-                savedMovies.add(movie);
-            }
+            String sql = "SELECT * FROM movies WHERE id=?";
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, i);
+            ResultSet data = stmt.executeQuery();
+            data.next();
+
+            Movie movie = new Movie(
+                    data.getInt("id"),
+                    data.getString("title"),
+                    data.getString("year"),
+                    data.getString("runtime"),
+                    data.getString("released"),
+                    data.getString("synopsis"),
+                    data.getString("logo"),
+                    getMovieScores(connection, i),
+                    getMovieData(connection, "genres", "name", i),
+                    data.getString("director"),
+                    getMovieData(connection, "casts", "name", i),
+                    getMovieData(connection, "languages", "name", i),
+                    data.getString("type"),
+                    data.getString("final_score"));
+
+            savedMovies.add(movie);
+        }
         return savedMovies;
     }
-    
-    private List<String> getMovieData(Connection connection, String table, String select, int movieId) throws SQLException{
+
+    private List<String> getMovieData(Connection connection, String table, String select, int movieId) throws SQLException {
         List<String> movieData = new ArrayList();
-        String sql = "SELECT ? FROM ? WHERE ?";
+        String sql = "SELECT ? FROM " + table + " WHERE movie_id=?";
         PreparedStatement stmt = connection.prepareStatement(sql);
         stmt.setString(1, select);
-        stmt.setString(2, table);
-        stmt.setInt(3, movieId);
+        stmt.setInt(2, movieId);
         ResultSet data = stmt.executeQuery();
-        while(data.next()){
+        while (data.next()) {
             movieData.add(data.getString(select));
         }
         return movieData;
     }
-    
+
     private List<Score> getMovieScores(Connection connection, int movieId) throws SQLException {
         List<Score> scores = new ArrayList();
         String sql = "SELECT * FROM scores WHERE movie_id=?";
         PreparedStatement stmt = connection.prepareStatement(sql);
         stmt.setInt(1, movieId);
         ResultSet data = stmt.executeQuery();
-        while(data.next()){
+        while (data.next()) {
             scores.add(new Score(data.getString("source"), data.getString("value"), data.getString("source_logo")));
         }
         return scores;
