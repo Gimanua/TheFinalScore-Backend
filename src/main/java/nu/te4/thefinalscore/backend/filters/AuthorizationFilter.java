@@ -39,6 +39,10 @@ public class AuthorizationFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext crc) throws IOException {
         try {
+            if(crc.getUriInfo().getPath().endsWith("signup/regular") || crc.getUriInfo().getPath().endsWith("signup/oauth")){
+                return;
+            }
+            
             if (!crc.getMethod().equals("GET") || crc.getUriInfo().getPath().endsWith("saved-movies")) {
                 MultivaluedMap<String, String> headers = crc.getHeaders();
                 if (!headers.containsKey("Authorization")) {
