@@ -234,33 +234,33 @@ public class MovieBean {
 
     public Response getSavedMovies(String basicAuth) {
         try ( Connection connection = ConnectionFactory.getConnection()) {
-            LOGGER.error("Parsing credentials from string basicAuth: {}", basicAuth);
+            LOGGER.debug("Parsing credentials from string basicAuth: {}", basicAuth);
             Credentials credentials = new Credentials(basicAuth);
-            LOGGER.error("Credentials parsed to: {}", credentials);
+            LOGGER.debug("Credentials parsed to: {}", credentials);
 
-            LOGGER.error("Retrieving userId with username: {}", credentials.getUsername());
+            LOGGER.debug("Retrieving userId with username: {}", credentials.getUsername());
             Integer userId = userBean.getUserId(credentials.getUsername());
-            LOGGER.error("Id retrieved: {}", userId);
+            LOGGER.debug("Id retrieved: {}", userId);
 
             String sql = "SELECT movie_id FROM saved_movies WHERE user_id=?";
-            LOGGER.error("Preparing statement with sql: {}", sql);
+            LOGGER.debug("Preparing statement with sql: {}", sql);
             PreparedStatement stmt = connection.prepareStatement(sql);
-            LOGGER.error("Sets the user_id to: {}", userId);
+            LOGGER.debug("Sets the user_id to: {}", userId);
             stmt.setInt(1, userId);
-            LOGGER.error("Executing query");
+            LOGGER.debug("Executing query");
             ResultSet data = stmt.executeQuery();
             List<Integer> savedMovieIds = new ArrayList();
-            LOGGER.error("Iterating over the data.");
+            LOGGER.debug("Iterating over the data.");
             while (data.next()) {
-                LOGGER.error("Retrieving the movie_id from the data.");
+                LOGGER.debug("Retrieving the movie_id from the data.");
                 int movieId = data.getInt("movie_id");
-                LOGGER.error("Inserting the movie_id: {}", movieId);
+                LOGGER.debug("Inserting the movie_id: {}", movieId);
                 savedMovieIds.add(movieId);
             }
 
             return Response.status(Response.Status.OK).entity(getSavedMovies(connection, savedMovieIds)).build();
         } catch (SQLException ex) {
-            LOGGER.error("Failed to retrieve saved movies: {}", ex.getMessage());
+            LOGGER.debug("Failed to retrieve saved movies: {}", ex.getMessage());
             return Response.status(Response.Status.SERVICE_UNAVAILABLE).build();
         }
     }
