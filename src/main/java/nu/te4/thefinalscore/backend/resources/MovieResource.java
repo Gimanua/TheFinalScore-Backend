@@ -3,6 +3,7 @@ package nu.te4.thefinalscore.backend.resources;
 import nu.te4.thefinalscore.backend.beans.MovieBean;
 import javax.ejb.EJB;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -60,5 +61,11 @@ public class MovieResource {
     @GET
     public Response getSavedMovies(@HeaderParam("Authorization") String basicAuth){
         return movieBean.getSavedMovies(basicAuth);
+    }
+    
+    @Path("saved-movie/{id}")
+    @DELETE
+    public Response deleteSavedMovie(@PathParam("id") int movieId){
+        return movieBean.deleteMovie(movieId);
     }
 }

@@ -5,6 +5,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -164,12 +165,12 @@ public class MovieBean {
             generatedKeys.next();
             int movieId = generatedKeys.getInt(1);
             movie.setId(movieId);
-            
+
             saveCast(connection, movie);
             saveGenres(connection, movie);
             saveLanguages(connection, movie);
             saveScores(connection, movie);
-            
+
             //Connect the movie with a user
             Credentials credentials = new Credentials(basicAuth);
             Integer userID = userBean.getUserId(credentials.getUsername());
@@ -199,9 +200,9 @@ public class MovieBean {
             stmt.executeUpdate();
         }
     }
-    
-    private void saveGenres(Connection connection, Movie movie) throws SQLException{
-        for(String name : movie.getGenres()){
+
+    private void saveGenres(Connection connection, Movie movie) throws SQLException {
+        for (String name : movie.getGenres()) {
             String sql = "INSERT INTO genres (movie_id, name) VALUES(?, ?)";
             PreparedStatement stmt = connection.prepareStatement(sql);
             stmt.setInt(1, movie.getId());
@@ -209,9 +210,9 @@ public class MovieBean {
             stmt.executeUpdate();
         }
     }
-    
-    private void saveLanguages(Connection connection, Movie movie) throws SQLException{
-        for(String name : movie.getGenres()){
+
+    private void saveLanguages(Connection connection, Movie movie) throws SQLException {
+        for (String name : movie.getLanguages()) {
             String sql = "INSERT INTO languages (movie_id, name) VALUES(?, ?)";
             PreparedStatement stmt = connection.prepareStatement(sql);
             stmt.setInt(1, movie.getId());
@@ -219,9 +220,9 @@ public class MovieBean {
             stmt.executeUpdate();
         }
     }
-    
-    private void saveScores(Connection connection, Movie movie) throws SQLException{
-        for(Score score : movie.getScores()){
+
+    private void saveScores(Connection connection, Movie movie) throws SQLException {
+        for (Score score : movie.getScores()) {
             String sql = "INSERT INTO scores (movie_id, value, source, source_logo) VALUES(?, ?, ?, ?)";
             PreparedStatement stmt = connection.prepareStatement(sql);
             stmt.setInt(1, movie.getId());
@@ -260,7 +261,7 @@ public class MovieBean {
 
             return Response.status(Response.Status.OK).entity(getSavedMovies(connection, savedMovieIds)).build();
         } catch (SQLException ex) {
-            LOGGER.debug("Failed to retrieve saved movies: {}", ex.getMessage());
+            LOGGER.error("Failed to retrieve saved movies: {}", ex.getMessage());
             return Response.status(Response.Status.SERVICE_UNAVAILABLE).build();
         }
     }
@@ -283,11 +284,11 @@ public class MovieBean {
                     data.getString("released"),
                     data.getString("synopsis"),
                     data.getString("logo"),
-                    getMovieScores(connection, i),
-                    getMovieData(connection, "genres", "name", i),
+                    getMovieScores(i),
+                    getMovieData("genres", "name", i),
                     data.getString("director"),
-                    getMovieData(connection, "casts", "name", i),
-                    getMovieData(connection, "languages", "name", i),
+                    getMovieData("casts", "name", i),
+                    getMovieData("languages", "name", i),
                     data.getString("type"),
                     data.getString("final_score"));
 
@@ -296,28 +297,90 @@ public class MovieBean {
         return savedMovies;
     }
 
-    private List<String> getMovieData(Connection connection, String table, String select, int movieId) throws SQLException {
+    private List<String> getMovieData(String table, String select, int movieId) throws SQLException {
         List<String> movieData = new ArrayList();
-        String sql = "SELECT ? FROM " + table + " WHERE movie_id=?";
-        PreparedStatement stmt = connection.prepareStatement(sql);
-        stmt.setString(1, select);
-        stmt.setInt(2, movieId);
-        ResultSet data = stmt.executeQuery();
-        while (data.next()) {
-            movieData.add(data.getString(select));
+        try ( Connection connection = ConnectionFactory.getConnection()) {
+
+            String sql = "SELECT " + select + " FROM " + table + " WHERE movie_id=" + movieId;
+            Statement stmt = connection.createStatement();
+            ResultSet data = stmt.executeQuery(sql);
+            while (data.next()) {
+                movieData.add(data.getString(select));
+            }
+        } catch (SQLException ex) {
+            LOGGER.error("Failed to retrieve movie data: {}", ex.getMessage());
         }
         return movieData;
     }
 
-    private List<Score> getMovieScores(Connection connection, int movieId) throws SQLException {
+    private List<Score> getMovieScores(int movieId) throws SQLException {
         List<Score> scores = new ArrayList();
-        String sql = "SELECT * FROM scores WHERE movie_id=?";
+        try ( Connection connection = ConnectionFactory.getConnection()) {
+            String sql = "SELECT * FROM scores WHERE movie_id=?";
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, movieId);
+            ResultSet data = stmt.executeQuery();
+            while (data.next()) {
+                scores.add(new Score(data.getString("source"), data.getString("value"), data.getString("source_logo")));
+            }
+        } catch (SQLException ex) {
+            LOGGER.error("Failed to retrieve movie scores: {}", ex.getMessage());
+        }
+
+        return scores;
+    }
+
+    public Response deleteMovie(int movieId) {
+        try ( Connection connection = ConnectionFactory.getConnection()) {
+            deleteMovieConnection(connection, movieId);
+            deleteMovieCast(connection, movieId);
+            deleteMovieGenres(connection, movieId);
+            deleteMovieLanguages(connection, movieId);
+            deleteMovieScores(connection, movieId);
+
+            String sql = "DELETE FROM movies WHERE id=?";
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, movieId);
+            stmt.executeUpdate();
+            return Response.status(Response.Status.NO_CONTENT).build();
+        } catch (SQLException ex) {
+            LOGGER.error("Failed to delete movie: {}", ex.getMessage());
+            return Response.status(Response.Status.SERVICE_UNAVAILABLE).build();
+        }
+    }
+
+    private int deleteMovieConnection(Connection connection, int movieId) throws SQLException {
+        String sql = "DELETE FROM saved_movies WHERE movie_id=?";
         PreparedStatement stmt = connection.prepareStatement(sql);
         stmt.setInt(1, movieId);
-        ResultSet data = stmt.executeQuery();
-        while (data.next()) {
-            scores.add(new Score(data.getString("source"), data.getString("value"), data.getString("source_logo")));
-        }
-        return scores;
+        return stmt.executeUpdate();
+    }
+
+    private int deleteMovieCast(Connection connection, int movieId) throws SQLException {
+        String sql = "DELETE FROM casts WHERE movie_id=?";
+        PreparedStatement stmt = connection.prepareStatement(sql);
+        stmt.setInt(1, movieId);
+        return stmt.executeUpdate();
+    }
+
+    private int deleteMovieGenres(Connection connection, int movieId) throws SQLException {
+        String sql = "DELETE FROM genres WHERE movie_id=?";
+        PreparedStatement stmt = connection.prepareStatement(sql);
+        stmt.setInt(1, movieId);
+        return stmt.executeUpdate();
+    }
+
+    private int deleteMovieLanguages(Connection connection, int movieId) throws SQLException {
+        String sql = "DELETE FROM languages WHERE movie_id=?";
+        PreparedStatement stmt = connection.prepareStatement(sql);
+        stmt.setInt(1, movieId);
+        return stmt.executeUpdate();
+    }
+
+    private int deleteMovieScores(Connection connection, int movieId) throws SQLException {
+        String sql = "DELETE FROM scores WHERE movie_id=?";
+        PreparedStatement stmt = connection.prepareStatement(sql);
+        stmt.setInt(1, movieId);
+        return stmt.executeUpdate();
     }
 }

@@ -14,6 +14,7 @@ import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.ext.Provider;
 import nu.te4.thefinalscore.backend.beans.MovieBean;
 import nu.te4.thefinalscore.backend.beans.SigninBean;
 import org.slf4j.Logger;
@@ -24,6 +25,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Adrian Klasson
  */
+@Provider
 public class AuthorizationFilter implements ContainerRequestFilter {
 
     /**
@@ -36,7 +38,6 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext crc) throws IOException {
-        
         try {
             if (!crc.getMethod().equals("GET") || crc.getUriInfo().getPath().endsWith("saved-movies")) {
                 MultivaluedMap<String, String> headers = crc.getHeaders();
