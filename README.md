@@ -11,6 +11,8 @@ Download the version called "18.0.1.Final". Then you also need the wildfly plugi
 ## Database
 Download XAMPP controller. Start the Apache and MySql servers. Click the admin button on the MySql server, your web browser should open. Click import then select the "The_Final_Score.sql" file and click run.
 
+You also need to create a user called 'user' with the password 'm25pFs9JqkCUr9w0' which has access to the table The_Final_Score. Alternatively you need to change how the Java connection to the Database is established.
+
 ## Running
 Open the movie.java (any .java file works) file in the entities folder. Now you can start it with pressing F6 (It is recomended to "Clean and build" first). Now a tab should pop up in your browser. Don't worry if you get the 403 or 404 error message. It works anyway. 
 
